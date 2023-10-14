@@ -273,16 +273,104 @@ object hof{
     */
 
     sealed trait List[+T]{
-      def ::[TT >: T](elem: TT): List[TT] = ???
-    }
+
+     /**
+      * Метод cons, добавляет элемент в голову списка, для этого метода можно воспользоваться названием `::`
+      *
+      */
+     def ::[TT >: T](elem: TT): List[TT] = Cons(elem, this)
+
+     /**
+      * Метод mkString возвращает строковое представление списка, с учетом переданного разделителя
+      *
+      */
+     def mkString(separator: String): String = {
+       @tailrec
+       def go(list: List[T], acc: String): String = {
+         list match {
+           case Cons(head, tail) => go(tail, acc + separator + head)
+           case Nil => acc
+         }
+       }
+       go(this, "")
+     }
+
+     /**
+      *
+      * Реализовать метод reverse который позволит заменить порядок элементов в списке на противоположный
+      */
+     def reverse(): List[T] = {
+       @tailrec
+       def go(list: List[T], acc: List[T]): List[T] = {
+         list match {
+           case Cons(head, tail) => go(tail, head :: acc)
+           case Nil => acc
+         }
+       }
+       go(this, Nil)
+     }
+
+     /**
+      *
+      * Реализовать метод map для списка который будет применять некую ф-цию к элементам данного списка
+      */
+     def map[R](f: T => R): List[R] = {
+       @tailrec
+       def go(list: List[T], acc: List[R]): List[R] = {
+         list match {
+           case Cons(head, tail) => go(tail, f(head) :: acc)
+           case Nil => acc
+         }
+       }
+       go(this, Nil).reverse()
+     }
+
+     /**
+      *
+      * Реализовать метод filter для списка который будет фильтровать список по некому условию
+      */
+     def filter(predicate: T => Boolean): List[T] = {
+       @tailrec
+       def go(list: List[T], acc: List[T]): List[T] = {
+         list match {
+           case Cons(head, tail) => if (predicate(head)) go(tail, head :: acc) else go(tail, acc)
+           case Nil => acc
+         }
+       }
+       go(this, Nil).reverse();
+     }
+   }
 
     case class Cons[A](head: A, tail: List[A]) extends List[A]
     case object Nil extends List[Nothing]
 
    object List{
+
+     /**
+      * Конструктор, позволяющий создать список из N - го числа аргументов
+      * Для этого можно воспользоваться *
+      *
+      * Например вот этот метод принимает некую последовательность аргументов с типом Int и выводит их на печать
+      * def printArgs(args: Int*) = args.foreach(println(_))
+      */
      def apply[A](v: A*): List[A] =
        if(v.isEmpty) Nil
        else Cons(v.head, apply(v.tail:_*))
+
+     /**
+      *
+      * Написать функцию incList котрая будет принимать список Int и возвращать список,
+      * где каждый элемент будет увеличен на 1
+      */
+     def incList(list: List[Int]): List[Int] = list.map(_+1)
+
+     /**
+      *
+      * Написать функцию shoutString котрая будет принимать список String и возвращать список,
+      * где к каждому элементу будет добавлен префикс в виде '!'
+      */
+     def shoutString(list: List[String]): List[String] = list.map("!"+_)
+
    }
 
    Cons(1, Nil) // List(1)
@@ -292,52 +380,5 @@ object hof{
 
    // List(1, 2)
 
-
-   /**
-     * Метод cons, добавляет элемент в голову списка, для этого метода можно воспользоваться названием `::`
-     *
-     */
-
-    /**
-      * Метод mkString возвращает строковое представление списка, с учетом переданного разделителя
-      *
-      */
-
-    /**
-      * Конструктор, позволяющий создать список из N - го числа аргументов
-      * Для этого можно воспользоваться *
-      * 
-      * Например вот этот метод принимает некую последовательность аргументов с типом Int и выводит их на печать
-      * def printArgs(args: Int*) = args.foreach(println(_))
-      */
-
-    /**
-      *
-      * Реализовать метод reverse который позволит заменить порядок элементов в списке на противоположный
-      */
-
-    /**
-      *
-      * Реализовать метод map для списка который будет применять некую ф-цию к элементам данного списка
-      */
-
-
-    /**
-      *
-      * Реализовать метод filter для списка который будет фильтровать список по некому условию
-      */
-
-    /**
-      *
-      * Написать функцию incList котрая будет принимать список Int и возвращать список,
-      * где каждый элемент будет увеличен на 1
-      */
-
-
-    /**
-      *
-      * Написать функцию shoutString котрая будет принимать список String и возвращать список,
-      * где к каждому элементу будет добавлен префикс в виде '!'
-      */
 
  }
