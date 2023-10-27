@@ -1,6 +1,8 @@
 package collections
 
-object task_collections {
+import scala.annotation.tailrec
+
+object task_collections extends App {
 
   def isASCIIString(str: String): Boolean = str.matches("[A-Za-z]+")
 
@@ -16,7 +18,7 @@ object task_collections {
    *
    * **/
   def capitalizeIgnoringASCII(text: List[String]): List[String] = {
-    List.empty
+    text.head :: text.tail.map( x => if (isASCIIString(x)) x.toUpperCase else x.toLowerCase )
   }
 
   /**
@@ -29,7 +31,32 @@ object task_collections {
    * HINT: Для всех возможных комбинаций чисел стоит использовать Map
    * **/
   def numbersToNumericString(text: String): String = {
-    ""
+    val spliterator = " "
+
+    @tailrec
+    def go(acc: List[String], input: List[String]): String = input match {
+      case ::(head, tail) => go(acc ::: getWordFromDigit(head) :: Nil, tail)
+      case Nil => acc.mkString(spliterator)
+    }
+
+    def getWordFromDigit(word: String): String = {
+      word match {
+        case "0" => "zer"
+        case "1" => "one"
+        case "2" => "two"
+        case "3" => "three"
+        case "4" => "four"
+        case "5" => "five"
+        case "6" => "six"
+        case "7" => "seven"
+        case "8" => "eight"
+        case "9" => "nine"
+        case _ => word
+      }
+    }
+
+    val list = text.split(spliterator).toList
+    go(List.empty, list)
   }
 
   /**
@@ -47,7 +74,7 @@ object task_collections {
    * Реализуйте метод который примет две коллекции (два источника) и вернёт объединенный список уникальный значений
    **/
   def intersectionAuto(dealerOne: Iterable[Auto], dealerTwo: Iterable[Auto]): Iterable[Auto] = {
-    Iterable.empty
+    Set.from(dealerOne) ++ Set.from(dealerTwo)
   }
 
   /**
@@ -56,6 +83,6 @@ object task_collections {
    * и вернёт уникальный список машин обслуживающихся в первом дилерском центре и не обслуживающимся во втором
    **/
   def filterAllLeftDealerAutoWithoutRight(dealerOne: Iterable[Auto], dealerTwo: Iterable[Auto]): Iterable[Auto] = {
-    Iterable.empty
+    Set.from(dealerOne) -- Set.from(dealerTwo)
   }
 }
