@@ -3,6 +3,7 @@ package module1.futures
 import module1.futures.HomeworksUtils.TaskSyntax
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 object task_futures_sequence {
 
@@ -21,6 +22,14 @@ object task_futures_sequence {
    */
   def fullSequence[A](futures: List[Future[A]])
                      (implicit ex: ExecutionContext): Future[(List[A], List[Throwable])] =
-    task"Реализуйте метод `fullSequence`" ()
+    Future.sequence(futures.map(f => f.transformWith {
+      case Failure(exception) => Future(exception)
+      case Success(value) => Future(value)
+    })).map(list => (
+      list.filter(s => !isThrowable(s)).map(s => s.asInstanceOf[A]),
+      list.filter(f => isThrowable(f)).map(f => f.asInstanceOf[Throwable]))
+    )
 
+  def isThrowable(v: Any): Boolean = v.isInstanceOf[Throwable]
 }
+
