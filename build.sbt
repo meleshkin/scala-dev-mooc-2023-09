@@ -7,5 +7,6 @@ version := "1.0"
 
 libraryDependencies += Dependencies.scalaTest
 libraryDependencies ++= Dependencies.cats
+libraryDependencies ++= Dependencies.zio
 
 scalacOptions += "-Ymacro-annotations"
