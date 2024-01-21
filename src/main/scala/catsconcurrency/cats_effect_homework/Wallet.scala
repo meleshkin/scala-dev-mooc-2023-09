@@ -15,6 +15,8 @@ trait Wallet[F[_]] {
   def topup(amount: BigDecimal): F[Unit]
   // списывает указанную сумму с баланса (ошибка если средств недостаточно)
   def withdraw(amount: BigDecimal): F[Either[WalletError, Unit]]
+
+  def getId(): F[WalletId]
 }
 
 // Игрушечный кошелек который сохраняет свой баланс в файл
@@ -52,6 +54,8 @@ final class FileWallet[F[_]: Sync](id: WalletId) extends Wallet[F] {
       res <- if (bal < amount) Sync[F].delay(Left(BalanceTooLow)) else Sync[F].delay(Right(write))
     } yield res
   }
+
+  override def getId(): F[WalletId] = Sync[F].delay(id)
 }
 
 object Wallet {
