@@ -1,8 +1,8 @@
 package catsconcurrency.cats_effect_homework
 
-import cats.Monad
+import cats.{Monad, effect}
 import cats.effect.kernel.Ref
-import cats.effect.{IO, IOApp}
+import cats.effect.{IO, IOApp, Sync}
 import cats.implicits._
 import Wallet.{BalanceTooLow, WalletError, WalletId}
 
@@ -27,16 +27,27 @@ object WalletTransferApp extends IOApp.Simple {
     }
 
   // todo: реализовать интерпретатор (не забывая про ошибку списания при недостаточных средствах)
-  final class InMemWallet[F[_]](ref: Ref[F, BigDecimal]) extends Wallet[F] {
-    def balance: F[BigDecimal] = ???
-    def topup(amount: BigDecimal): F[Unit] = ???
-    def withdraw(amount: BigDecimal): F[Either[WalletError, Unit]] = ???
+  final class InMemWallet[F[_]: Sync](ref: Ref[F, BigDecimal]) extends Wallet[F] {
+    def balance: F[BigDecimal] = ref.get
+    def topup(amount: BigDecimal): F[Unit] = ref.update(a => a + amount)
+    def withdraw(amount: BigDecimal): F[Either[WalletError, Unit]] = {
+      for {
+        bal <- ref.get
+        topup <- topup(amount * -1)
+        res <- if (bal < amount) Sync[F].delay(Left(BalanceTooLow)) else Sync[F].delay(Right(topup))
+      } yield res
+
+    }
 
     override def getId(): F[WalletId] = ???
   }
 
   // todo: реализовать конструктор. Снова хитрая сигнатура, потому что создание Ref - это побочный эффект
-  def wallet(balance: BigDecimal): IO[Wallet[IO]] = ???
+  def wallet(balance: BigDecimal): IO[Wallet[IO]] = {
+    val ref: IO[Ref[IO, BigDecimal]] = Ref[IO].of(balance)
+    ref.map(r => new InMemWallet[IO](r))
+
+  }
 
   // а это тест, который выполняет перевод с одного кошелька на другой и выводит балансы после операции. Тоже менять не нужно
   def testTransfer: IO[(BigDecimal, BigDecimal)] =
