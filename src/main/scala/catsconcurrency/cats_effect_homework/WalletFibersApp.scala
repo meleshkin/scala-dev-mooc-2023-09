@@ -40,10 +40,10 @@ object WalletFibersApp extends IOApp.Simple {
     wallet3 <- Wallet.fileWallet[IO]("3")
     // todo: запустить все файберы и ждать ввода от пользователя чтобы завершить работу
     f1 <- topupLoop(wallet1, 100, 1000 millisecond).start
-    _ <- topupLoop(wallet2, 100, 2000 millisecond).start
-    _ <- topupLoop(wallet3, 100, 3000 millisecond).start
+    f2 <- topupLoop(wallet2, 100, 2000 millisecond).start
+    f3 <- topupLoop(wallet3, 100, 3000 millisecond).start
     _ <- balanceLoop(wallet1, wallet2, wallet3).start
-    _ <- IO.readLine *> f1.cancel
+    _ <- IO.readLine *> f1.cancel *> f2.cancel *> f3.cancel
     _ <- f1.join
   } yield ()
 }
