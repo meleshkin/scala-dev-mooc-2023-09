@@ -31,12 +31,11 @@ object WalletTransferApp extends IOApp.Simple {
     def balance: F[BigDecimal] = ref.get
     def topup(amount: BigDecimal): F[Unit] = ref.update(a => a + amount)
     def withdraw(amount: BigDecimal): F[Either[WalletError, Unit]] = {
-      for {
-        bal <- ref.get
-        topup <- topup(amount * -1)
-        res <- if (bal < amount) Sync[F].delay(Left(BalanceTooLow)) else Sync[F].delay(Right(topup))
-      } yield res
-
+      ref.modify(balance => {
+        if (balance < amount) {
+          (balance, Left(BalanceTooLow))
+        } else (balance - amount, Right())
+      })
     }
 
     override def getId(): F[WalletId] = ???
