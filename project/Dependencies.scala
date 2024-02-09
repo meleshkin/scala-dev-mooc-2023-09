@@ -65,11 +65,37 @@ object Dependencies {
 
   lazy val logback = "ch.qos.logback"  %  "logback-classic" % LogbackVersion
 
-  lazy val circe: Seq[ModuleID] = Seq(
+  lazy val circe = Seq(
     "io.circe" %% "circe-core" % CirceVersion,
-    "io.circe" %% "circe-parser" % CirceVersion,
     "io.circe" %% "circe-generic" % CirceVersion,
-    "io.circe" %% "circe-literal" % CirceVersion
+    "io.circe" %% "circe-parser" % CirceVersion,
+    "io.circe" %% "circe-derivation" % "0.13.0-M4",
+    "org.http4s" %% "http4s-circe" % "0.23.14"
+  )
+
+  lazy val akkaVersion = "2.8.3"
+  lazy val leveldbVersion = "0.7"
+  lazy val leveldbjniVersion = "1.8"
+  lazy val akkaContainers = Seq(
+    // Use Coda Hale Metrics and Akka instrumentation
+    "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+    "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+    "com.typesafe.akka" %% "akka-persistence-typed" % akkaVersion,
+    "com.typesafe.akka" %% "akka-persistence-query" % akkaVersion,
+    "com.typesafe.akka" %% "akka-cluster-sharding-typed" % akkaVersion,
+    "com.typesafe.akka" %% "akka-cluster-typed" % akkaVersion,
+    "com.typesafe.akka" %% "akka-cluster-tools" % akkaVersion,
+    "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
+    "com.typesafe.akka" %% "akka-remote" % akkaVersion,
+    "io.aeron" % "aeron-driver" % "1.40.0",
+    "io.aeron" % "aeron-client" % "1.40.0",
+
+    "org.iq80.leveldb" % "leveldb" % leveldbVersion,
+    "org.fusesource.leveldbjni" % "leveldbjni-all" % leveldbjniVersion,
+
+    "ch.qos.logback" % "logback-classic" % "1.2.3",
+    "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
+    "org.scalatest" %% "scalatest" % "3.1.0" % Test
   )
 
 }

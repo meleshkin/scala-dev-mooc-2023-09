@@ -18,5 +18,6 @@ libraryDependencies += Dependencies.logback
 libraryDependencies ++= Dependencies.quill
 libraryDependencies ++= Dependencies.testContainers
 libraryDependencies ++= Dependencies.circe
+libraryDependencies ++= Dependencies.akkaContainers
 
 scalacOptions += "-Ymacro-annotations"

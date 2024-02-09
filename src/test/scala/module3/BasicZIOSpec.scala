@@ -28,7 +28,7 @@ object BasicZIOSpec extends DefaultRunnableSpec{
 
 
   val hello: ZIO[Console with Clock, Nothing, Unit] =
-    ZIO.sleep(2 seconds) *> zio.console.putStrLn("Hello").orDie
+    ZIO.sleep(2 seconds) *> zio.console.putStrLn("Hello")
 
 
   val intGen: Gen[Random, Int] = Gen.anyInt
