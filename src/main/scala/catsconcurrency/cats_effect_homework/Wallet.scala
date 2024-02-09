@@ -4,6 +4,9 @@ import cats.effect.Sync
 import cats.implicits._
 import Wallet._
 
+import java.nio.file.Path
+import scala.io.{BufferedSource, Source}
+
 // DSL управления электронным кошельком
 trait Wallet[F[_]] {
   // возвращает текущий баланс
@@ -12,6 +15,8 @@ trait Wallet[F[_]] {
   def topup(amount: BigDecimal): F[Unit]
   // списывает указанную сумму с баланса (ошибка если средств недостаточно)
   def withdraw(amount: BigDecimal): F[Either[WalletError, Unit]]
+
+  def getId(): F[WalletId]
 }
 
 // Игрушечный кошелек который сохраняет свой баланс в файл
@@ -25,9 +30,32 @@ trait Wallet[F[_]] {
 // - java.nio.file.Files.exists
 // - java.nio.file.Paths.get
 final class FileWallet[F[_]: Sync](id: WalletId) extends Wallet[F] {
-  def balance: F[BigDecimal] = ???
-  def topup(amount: BigDecimal): F[Unit] = ???
-  def withdraw(amount: BigDecimal): F[Either[WalletError, Unit]] = ???
+  override def balance: F[BigDecimal] = {
+    val path: Path = java.nio.file.Path.of(workDir + id)
+    val str: String = java.nio.file.Files.readString(path)
+    if (str == null || str.isEmpty) {
+      Sync[F].delay(BigDecimal(0))
+    } else {
+      Sync[F].delay(BigDecimal(str))
+    }
+  }
+  def topup(amount: BigDecimal): F[Unit] = {
+    val path: Path = java.nio.file.Path.of(workDir + id)
+    val newBalance = balance.map(b => b + amount)
+    for {
+      bal <- newBalance
+      res <- Sync[F].delay(java.nio.file.Files.writeString(path, bal.toString()))
+    } yield res
+  }
+  def withdraw(amount: BigDecimal): F[Either[WalletError, Unit]] = {
+    for {
+      bal <- balance
+      write <- topup(amount * -1)
+      res <- if (bal < amount) Sync[F].delay(Left(BalanceTooLow)) else Sync[F].delay(Right(write))
+    } yield res
+  }
+
+  override def getId(): F[WalletId] = Sync[F].delay(id)
 }
 
 object Wallet {
@@ -37,7 +65,18 @@ object Wallet {
   // Здесь нужно использовать обобщенную версию уже пройденного вами метода IO.delay,
   // вызывается она так: Sync[F].delay(...)
   // Тайпкласс Sync из cats-effect описывает возможность заворачивания сайд-эффектов
-  def fileWallet[F[_]: Sync](id: WalletId): F[Wallet[F]] = ???
+  val workDir = "c:\\code\\wallet\\"
+  def fileWallet[F[_]: Sync](id: WalletId): F[Wallet[F]] = {
+    Sync[F].delay {
+      val path = java.nio.file.Path.of(workDir, id)
+      if (java.nio.file.Files.exists(path)) {
+        new FileWallet[F](id)
+      } else {
+        java.nio.file.Files.createFile(path)
+        new FileWallet[F](id)
+      }
+    }
+  }
 
   type WalletId = String
 
